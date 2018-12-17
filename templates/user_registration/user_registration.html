@@ -1,0 +1,30 @@
+{% extends 'layout/layout.html' %}
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="/static/css/signup.css" />
+{% endblock%}
+
+{% block body %}
+    <form class="form-signin" method="POST" style="margin-top:3%; max-width:25%; width:100%;">
+        <center>
+        <h1 class="h4 mb-3 font-weight-normal"><img src="/static/open-iconic/svg/task.svg" width=10% style="margin-right : 2%;"/>Member Registration</h1>
+        <hr>
+        
+        {% if err_chk == 1 %}
+			<div class="alert alert-danger" role="alert">
+				You have already registered.
+			</div>
+		{% endif %}
+        
+        <input type="hidden" id="page_index" name="page_index" class="form-control mb-1" value="1" />
+        <input type="text" id="inputFname" name="inputFname" class="form-control mb-1" placeholder="First name" required autofocus />
+        <input type="text" id="inputLname" name="inputLname" class="form-control mb-1" placeholder="Last name" required />
+        <input type="text" id="inputMobile" name="inputMobile" class="form-control mb-1" pattern="[0-9]{10}" placeholder="Mobile Number"  required />
+        <input type="text" id="inputUserName" name="inputUserName" class="form-control mb-1" placeholder="Username" required />
+        <input type="password" id="inputPassword" name="inputPassword" class="form-control mb-1" placeholder="Password" required />
+        <input type="password" id="inputConfPassword" name="inputConfPassword" class="form-control mb-3" placeholder="Confirm Password" required />
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Create User</button>
+        </center>
+    </form>
+    
+	 <script src="/static/js/password_validation.js"></script>
+{% endblock %}

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <title> Realtime Chatting </title>
+        <link rel="stylesheet" href="/static/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="/static/css/sidebar-toggle.css" />
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+        <script src="/static/js/plugins.js"></script>
+		<script src="/static/js/sidebar-toggle.js"></script>
+        {% block head %}{% endblock%}
+    </head>
+
+    <body>
+		<div class=" static-top" style="top:9.2%; left:0; width:100%; height:90vh; background-color:none; z-index:0;">
+			{% block body %}{% endblock %}
+        </div>
+    </body>
+</html>
