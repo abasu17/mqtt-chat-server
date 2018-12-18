@@ -21,7 +21,7 @@ class Users(db.Model):
 		self.signature = topic
 
 	def __repr__(self):
-		return str(self.u_name)
+		return str(str(self.u_name) + "," + str(self.signature) + "," + str(self.u_id))
 	
 class Messages(db.Model):
 	__tablename__ = 'sys_messages'

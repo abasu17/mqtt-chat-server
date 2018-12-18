@@ -6,27 +6,42 @@
 		$(document).ready(function() {
 			var socket = io.connect('http://' + document.domain + ':' + location.port);
 			
-			var topic =''
-			var qos = 0
+			var topic = "{{ curr_sign }}";
+			var qos = 0;
 			var data = '{"topic": "' + topic + '", "qos": ' + qos + '}';
 			socket.emit('subscribe', data=data);
 
 			$('#button_send').click(function(event) {
-				var topic = $('#selectUser').val();
+				var topic = $('#selectUser').find(':selected').data('action');
 				var message = $('#inputMsgBox').val();
-				//var qos = $('#qos').val();
-				//var data = '{"topic": "' + topic + '", "message": "' + message + '", "qos": ' + qos + '}';
-				var data = '{"topic": "' + topic + '", "message": "' + message + '}';
+				var qos = 0;
+				var data = '{"topic": "' + topic + '", "message": "' + message + '", "qos": ' + qos + '}';
 				socket.emit('publish', data=data);
-				});
+				setTimeout(
+					function() {
+				}, 4000);
+			});
+			
 
 			socket.on('mqtt_message', function(data) {
 				console.log(data);
 				var text = '(' + data['topic'] + ' qos: ' + data['qos'] + ') ' + data['payload'];
 				var $textarea = $('#msgBox');
 				$textarea.val($textarea.val() + text + '\n');
-			})
-		});
+			});
+		
+			$('#selectUser').on("change", function(){
+				var v = $(this).val();
+				$.ajax({
+					type: "POST",
+					url: "{{url_for('get_record')}}",             
+					data: {"data_id" : v},   
+					success: function(response){                    
+	    					$("#msgBox").html(response); 
+					}
+				});
+			});
+		});	
 	</script>
 {% endblock%}
 
@@ -46,7 +61,7 @@
 		<option value=''>[Choose an user to send message]</option>
 		{% for u in users : %}
 			{% if u[3] != curr_user: %}
-				<option value={{ u[2] }}>
+				<option value={{ u[2] }} data-action={{ u[4] }}>
 					{{u[0] + " " + u[1]}}
 				</option>
 			{% endif %}

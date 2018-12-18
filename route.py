@@ -1,4 +1,4 @@
-import eventlet
+#import eventlet
 from app import *
 from datetime import timedelta
 from flask import render_template, request, session, send_from_directory, redirect, url_for
@@ -9,7 +9,7 @@ from sqlalchemy import or_
 from models import *
 import json
 
-eventlet.monkey_patch()
+#eventlet.monkey_patch()
 
 @app.route('/', methods=['GET', 'POST'])
 def user_login():
@@ -25,8 +25,11 @@ def user_login():
 		if check_registered_user is None:
 			error_check = 1
 		else:
+			new_data = str(check_registered_user).split(',')
 			session['auth'] = True
-			session['user_name'] = str(check_registered_user)
+			session['user_name'] = new_data[0]
+			session['signature'] = new_data[1]
+			session['u_id'] = new_data[2]
 			return redirect( url_for('chatting') ) 
 
 	return render_template('user_login/user_login.html', err_chk = error_check)
@@ -68,10 +71,10 @@ def user_registration():
 def chatting():
 	if (not session['auth']):
 		return redirect('/')
-	get_users = db.session.query(Users).with_entities(Users.f_name, Users.l_name, Users.u_id, Users.u_name)
+	get_users = db.session.query(Users).with_entities(Users.f_name, Users.l_name, Users.u_id, Users.u_name, Users.signature)
 
 	get_sign = db.session.query(Users.signature).filter(Users.u_name == session['user_name']).all()
-	mqtt.subscribe("chat_server/" + str(get_sign[0][0]))
+	mqtt.subscribe(str(get_sign[0][0]))
 
 	if request.method == 'POST':
 		if (request.form['selectUser'] != None and request.form['inputMsgBox'] != None):
@@ -86,9 +89,9 @@ def chatting():
 			db.session.commit()
 
 			get_to_sign = db.session.query(Users.signature).filter(Users.u_id == msg_to).all()
-			mqtt.publish("chat_server/" + str(get_to_sign[0][0]), msg_id)
+			mqtt.publish(str(get_to_sign[0][0]), msg_id)
 
-	return render_template('sys_chatbox/sys_chatbox.html', users = list(get_users), curr_user = session['user_name'])
+	return render_template('sys_chatbox/sys_chatbox.html', users = list(get_users), curr_user = session['user_name'], curr_sign = session['signature'])
 
 @app.route('/logout')
 def logout():
@@ -96,19 +99,30 @@ def logout():
 	session.pop('user_name')
 	return redirect('/')
 
+@app.route('/get_record', methods=['GET', 'POST'])
+def get_record():
+	get_msg = db.session.query(Messages.msg_body).filter(Messages.msg_from == str(request.form['data_id']), Messages.msg_to == session['u_id']).all()
+
+	return str(get_msg).replace("[", "").replace("('", "").replace("',)," , '&#13;').replace("',)", "").replace("]", "")
+
 ''' SocketIO Setup '''
 @socketio.on('publish')
 def handle_publish(json_str):
+    #os.system("clear")
+    print("\n\n Data published!!!\n")
+    print(json_str)
     data = json.loads(json_str)
     mqtt.publish(data['topic'], data['message'])
-    print("\n\n Data published!!! \n\n")
 
 
 @socketio.on('subscribe')
 def handle_subscribe(json_str):
+    #os.system("clear")
+    print("\n\n Data subscribed!!!\n")
+    print(json_str)
     data = json.loads(json_str)
     mqtt.subscribe(data['topic'])
-    print("\n\n Data subscribed!!! \n\n")
+    print("\n\n")
     
 ''' MQTT Callbacks '''
 @mqtt.on_message()
@@ -118,4 +132,5 @@ def handle_mqtt_message(client, userdata, message):
 
 @mqtt.on_log()
 def handle_logging(client, userdata, level, buf):
-    print(level, buf)
+	#print(level, buf)
+	pass
