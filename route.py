@@ -1,4 +1,3 @@
-#import eventlet
 from app import *
 from datetime import timedelta
 from flask import render_template, request, session, send_from_directory, redirect, url_for
@@ -9,7 +8,7 @@ from sqlalchemy import or_
 from models import *
 import json
 
-#eventlet.monkey_patch()
+eventlet.monkey_patch()
 
 @app.route('/', methods=['GET', 'POST'])
 def user_login():
@@ -76,7 +75,7 @@ def chatting():
 	get_sign = db.session.query(Users.signature).filter(Users.u_name == session['user_name']).all()
 	mqtt.subscribe(str(get_sign[0][0]))
 
-	if request.method == 'POST':
+	'''if request.method == 'POST':
 		if (request.form['selectUser'] != None and request.form['inputMsgBox'] != None):
 			msg_id = uuid()
 			msg_from = db.session.query(Users).with_entities(Users.u_id).filter(Users.u_name == session['user_name'])
@@ -89,9 +88,39 @@ def chatting():
 			db.session.commit()
 
 			get_to_sign = db.session.query(Users.signature).filter(Users.u_id == msg_to).all()
-			mqtt.publish(str(get_to_sign[0][0]), msg_id)
-
+			ms_to = db.session.query(Users.u_name).filter(Users.u_id == msg_to).first()
+			mqtt.publish(str(get_to_sign[0][0]), ms_to[0]+' ['+str(msg_timestamp)+'] : '+ str(msg_body) )'''
+	
 	return render_template('sys_chatbox/sys_chatbox.html', users = list(get_users), curr_user = session['user_name'], curr_sign = session['signature'])
+
+@app.route('/store_msg', methods=['GET', 'POST'] )
+def store_msg():
+	if (not session['auth']):
+		return redirect('/')
+
+	if (request.form['selectUser'] != None and request.form['inputMsgBox'] != None):
+		msg_id = uuid()
+		msg_from = db.session.query(Users).with_entities(Users.u_id).filter(Users.u_name == session['user_name'])
+		msg_to = request.form['selectUser']
+		msg_body = request.form['inputMsgBox']
+		msg_timestamp = get_time()
+
+		msg_store = Messages(msg_id, msg_from, msg_to, msg_body, msg_timestamp)
+		db.session.add(msg_store)
+		db.session.commit()
+
+		get_to_sign = db.session.query(Users.signature).filter(Users.u_id == msg_to).all()
+		ms_to = db.session.query(Users.u_name).filter(Users.u_id == msg_to).first()
+		mqtt.publish(str(get_to_sign[0][0]), ms_to[0]+' ['+str(msg_timestamp)+'] : '+ str(msg_body) )
+		return "Ok"
+
+@app.route('/get_record', methods=['GET', 'POST'])
+def get_record():
+	if (not session['auth']):
+		return redirect('/')
+	get_msg = db.session.query(Messages.msg_body).filter(Messages.msg_from == str(request.form['data_id']), Messages.msg_to == session['u_id']).all()
+
+	return str(get_msg).replace("[", "").replace("('", "").replace("',)," , '&#13;').replace("',)", "").replace("]", "")
 
 @app.route('/logout')
 def logout():
@@ -99,36 +128,36 @@ def logout():
 	session.pop('user_name')
 	return redirect('/')
 
-@app.route('/get_record', methods=['GET', 'POST'])
-def get_record():
-	get_msg = db.session.query(Messages.msg_body).filter(Messages.msg_from == str(request.form['data_id']), Messages.msg_to == session['u_id']).all()
-
-	return str(get_msg).replace("[", "").replace("('", "").replace("',)," , '&#13;').replace("',)", "").replace("]", "")
-
 ''' SocketIO Setup '''
 @socketio.on('publish')
 def handle_publish(json_str):
-    #os.system("clear")
-    print("\n\n Data published!!!\n")
-    print(json_str)
-    data = json.loads(json_str)
-    mqtt.publish(data['topic'], data['message'])
+	print("\n\n Data published!!!\n")
+	print(json_str)
+	data = json.loads(json_str)
+	mqtt.publish(data['topic'], data['message'], data['qos'])
+	print("\n\n")
 
 
 @socketio.on('subscribe')
 def handle_subscribe(json_str):
-    #os.system("clear")
-    print("\n\n Data subscribed!!!\n")
-    print(json_str)
-    data = json.loads(json_str)
-    mqtt.subscribe(data['topic'])
-    print("\n\n")
-    
+	print("\n\n Data subscribed!!!\n")
+	print(json_str)
+	data = json.loads(json_str)
+	mqtt.subscribe(data['topic'], data['qos'])
+	print("\n\n")
+	
 ''' MQTT Callbacks '''
 @mqtt.on_message()
 def handle_mqtt_message(client, userdata, message):
-	data = dict( topic=message.topic, payload=message.payload.decode() )
-	socketio.emit('mqtt_message', data=data)
+	print("\n\n On Message!!!\n")
+	data = dict( 
+		topic=message.topic, 
+		payload=message.payload.decode(),
+		qos=message.qos,
+	)
+	print(data)
+	socketio.emit('mqtt_msg', data=data)
+	print("\n\n")
 
 @mqtt.on_log()
 def handle_logging(client, userdata, level, buf):

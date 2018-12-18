@@ -11,25 +11,42 @@
 			var data = '{"topic": "' + topic + '", "qos": ' + qos + '}';
 			socket.emit('subscribe', data=data);
 
-			$('#button_send').click(function(event) {
+			/*$('#button_send').click(function(event) {
 				var topic = $('#selectUser').find(':selected').data('action');
 				var message = $('#inputMsgBox').val();
 				var qos = 0;
 				var data = '{"topic": "' + topic + '", "message": "' + message + '", "qos": ' + qos + '}';
 				socket.emit('publish', data=data);
-				setTimeout(
-					function() {
-				}, 4000);
+			});*/
+			
+			$('form').on("submit", function(e){
+				e.preventDefault();
+				var selectUser = $('#selectUser').val();
+				var inputMsgBox = $('#inputMsgBox').val();
+				$.ajax({
+					type: "POST",
+					url: "{{url_for('store_msg')}}",             
+					data: {"selectUser" : selectUser, "inputMsgBox" : inputMsgBox}, 
+					success: function(response){
+						var topic = $('#selectUser').find(':selected').data('action');
+						var message = $('#inputMsgBox').val();
+						var qos = 0;
+						var data = '{"topic": "' + topic + '", "message": "' + message + '", "qos": ' + qos + '}';
+						socket.emit('publish', data=data);
+						$("#inputMsgBox").val(''); 
+					}
+				});
 			});
 			
-
-			socket.on('mqtt_message', function(data) {
+			socket.on('mqtt_msg', function(data) {
+				alert("Hi");
 				console.log(data);
-				var text = '(' + data['topic'] + ' qos: ' + data['qos'] + ') ' + data['payload'];
+				//var text = '(' + data['topic'] + ' qos: ' + data['qos'] + ') ' + data['payload'];
+				var text = data['payload'];
 				var $textarea = $('#msgBox');
 				$textarea.val($textarea.val() + text + '\n');
 			});
-		
+			
 			$('#selectUser').on("change", function(){
 				var v = $(this).val();
 				$.ajax({
@@ -41,6 +58,7 @@
 					}
 				});
 			});
+			
 		});	
 	</script>
 {% endblock%}

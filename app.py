@@ -1,7 +1,9 @@
+import eventlet
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_mqtt import Mqtt
 from flask_socketio import SocketIO
+from flask_bootstrap import Bootstrap
 
 app = Flask(__name__)
 app.config.from_pyfile('config.py')
@@ -10,7 +12,9 @@ db = SQLAlchemy(app)
 
 mqtt = Mqtt(app)
 
-socketio = SocketIO(app)
+socketio = SocketIO(app, async_mode="eventlet")
+
+bootstrap = Bootstrap(app)
 
 from route import *
     
