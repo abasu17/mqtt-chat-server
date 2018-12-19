@@ -37,3 +37,6 @@ This project is developed on Python Platform. This is a simple chatting applicat
 > - *>>* **from app import db**
 > - *>>* **db.create_all()**
 > - *>>* **exit()**
+
+###### Run Project
+> $ **python3 app.py**
