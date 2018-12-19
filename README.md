@@ -29,13 +29,11 @@ This project is developed on Python Platform. This is a simple chatting applicat
 
 ## Setup Project
 ###### Clone GIT
-> $ **git clone https://github.com/abasu17/mqtt-chat-server.git**
-
-###### Setup Database
+> - $ **git clone https://github.com/abasu17/mqtt-chat-server.git**
 > - $ **cd mqtt-chat-server**
 > - $ **python3**
 
-###### On Pyhton terminal.
+###### Setup Database
 > - *>>* **from app import db**
 > - *>>* **db.create_all()**
 > - *>>* **exit()**
