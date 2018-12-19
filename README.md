@@ -1,7 +1,8 @@
 # mqtt-chat-server
 
 This project is developed on Python Platform. This is a simple chatting application implemented with MQTT protocol.
-**Python Version** : 3.6+
+- **Python Version** : 3.6+
+- **Flask Version** : 1.0.2
 
 ## Setup Database Environment
 ###### Install postgresql-10
