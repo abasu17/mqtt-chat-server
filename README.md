@@ -4,10 +4,10 @@ This project is developed on Python Platform. This is a simple chatting applicat
 
 ## Setup Database Environment
 ###### Install postgresql-10
-> **$**sudo apt-get install postgresql-10
+> $ **sudo apt-get install postgresql-10**
 
 ###### Install postgresql-development environment
-> **$**sudo apt-get install postgresql postgresql-contrib libpq-dev
+> $ **sudo apt-get install postgresql postgresql-contrib libpq-dev**
 
 ###### Install pgadmin3
 > **$**sudo apt install pgadmin3
