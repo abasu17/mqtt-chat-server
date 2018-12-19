@@ -38,8 +38,8 @@
 				});
 			});
 			
-			socket.on('mqtt_msg', function(data) {
-				alert("Hi");
+			socket.on('mqtt_message', function(data) {
+				//alert("Hi");
 				console.log(data);
 				//var text = '(' + data['topic'] + ' qos: ' + data['qos'] + ') ' + data['payload'];
 				var text = data['payload'];

@@ -4,11 +4,10 @@ from flask import render_template, request, session, send_from_directory, redire
 import os, time
 from plugins import *
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
 from models import *
 import json
 
-eventlet.monkey_patch()
 
 @app.route('/', methods=['GET', 'POST'])
 def user_login():
@@ -118,9 +117,9 @@ def store_msg():
 def get_record():
 	if (not session['auth']):
 		return redirect('/')
-	get_msg = db.session.query(Messages.msg_body).filter(Messages.msg_from == str(request.form['data_id']), Messages.msg_to == session['u_id']).all()
 
-	return str(get_msg).replace("[", "").replace("('", "").replace("',)," , '&#13;').replace("',)", "").replace("]", "")
+	get_msg = db.session.query(Messages.msg_timestamp, '|'+Users.u_name, Messages.msg_body).outerjoin(Users, Users.u_id == Messages.msg_from).filter(or_(and_(Messages.msg_from == str(request.form['data_id']), Messages.msg_to == session['u_id']), and_(Messages.msg_from == session['u_id'], Messages.msg_to == str(request.form['data_id'])))).limit(100).all()
+	return str(get_msg).replace("[", "").replace("('", "[").replace("')," , '&#13;').replace("',)", "").replace("]", "").replace("', '", "] : ").replace("')", "").replace("] : |", " @ ")
 
 @app.route('/logout')
 def logout():
@@ -137,13 +136,13 @@ def handle_publish(json_str):
 	mqtt.publish(data['topic'], data['message'], data['qos'])
 	print("\n\n")
 
-
 @socketio.on('subscribe')
 def handle_subscribe(json_str):
 	print("\n\n Data subscribed!!!\n")
 	print(json_str)
 	data = json.loads(json_str)
 	mqtt.subscribe(data['topic'], data['qos'])
+	time.sleep(0.2)	
 	print("\n\n")
 	
 ''' MQTT Callbacks '''
@@ -156,7 +155,7 @@ def handle_mqtt_message(client, userdata, message):
 		qos=message.qos,
 	)
 	print(data)
-	socketio.emit('mqtt_msg', data=data)
+	socketio.emit('mqtt_message', data=data)
 	print("\n\n")
 
 @mqtt.on_log()
