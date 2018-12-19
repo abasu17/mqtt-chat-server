@@ -26,3 +26,11 @@ This project is developed on Python Platform. This is a simple chatting applicat
 
 ###### Install Eventlet
 > $ **pip3 install eventlet**
+
+## Setup Project
+###### Clone GIT
+> $ **git clone https://github.com/abasu17/mqtt-chat-server.git**
+
+###### Setup Database
+> - $ **cd mqtt-chat-server**
+> - $ **python3**
