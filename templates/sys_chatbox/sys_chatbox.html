@@ -11,14 +11,6 @@
 			var data = '{"topic": "' + topic + '", "qos": ' + qos + '}';
 			socket.emit('subscribe', data=data);
 
-			/*$('#button_send').click(function(event) {
-				var topic = $('#selectUser').find(':selected').data('action');
-				var message = $('#inputMsgBox').val();
-				var qos = 0;
-				var data = '{"topic": "' + topic + '", "message": "' + message + '", "qos": ' + qos + '}';
-				socket.emit('publish', data=data);
-			});*/
-			
 			$('form').on("submit", function(e){
 				e.preventDefault();
 				var selectUser = $('#selectUser').val();
@@ -39,12 +31,11 @@
 			});
 			
 			socket.on('mqtt_message', function(data) {
-				//alert("Hi");
 				console.log(data);
-				//var text = '(' + data['topic'] + ' qos: ' + data['qos'] + ') ' + data['payload'];
-				var text = data['payload'];
+				var c_user = $('#chat_form').data('action');
+				var text = '[' + data['time'] + ' @ ' + c_user +']' + data['payload'];
 				var $textarea = $('#msgBox');
-				$textarea.val($textarea.val() + text + '\n');
+				$textarea.val($textarea.val()+ '\n' + text);
 			});
 			
 			$('#selectUser').on("change", function(){
@@ -71,7 +62,7 @@
 			</button>
 		</a>
 	</nav>
-	<form class="form-signin" method="POST" style="margin-top:3%; max-width:25%; width:100%;">
+	<form id="chat_form" class="form-signin" method="POST" style="margin-top:3%; max-width:25%; width:100%;" data-action={{curr_user}}>
 		<center>
 		<h1 class="h4 mb-3 font-weight-normal"><img src="/static/open-iconic/svg/chat.svg" width=10% style="margin-right : 2%;"/>Chat Box</h1>
 		<hr>
