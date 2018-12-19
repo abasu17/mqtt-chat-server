@@ -34,7 +34,8 @@ This project is developed on Python Platform. This is a simple chatting applicat
 ###### Setup Database
 > - $ **cd mqtt-chat-server**
 > - $ **python3**
-Pyhton terminal will appear.
+
+###### On Pyhton terminal.
 > - >> **from app import db**
 > - >> **db.create_all()**
 > - >> **exit()**
