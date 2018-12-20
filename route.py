@@ -1,6 +1,6 @@
 from app import *
 from datetime import timedelta
-from flask import render_template, request, session, send_from_directory, redirect, url_for
+from flask import render_template, request, session, send_from_directory, redirect, url_for, jsonify
 import os, time
 from plugins import *
 from flask_sqlalchemy import SQLAlchemy
@@ -32,6 +32,17 @@ def user_login():
 
 	return render_template('user_login/user_login.html', err_chk = error_check)
 
+@app.route('/api/user_data/<u_name>', methods=['GET', 'POST'])
+def user_data(u_name):
+	if (not session['auth']):
+		return redirect('/')
+	if (u_name ==  session['user_name']):
+		get_user_data = db.session.query(Users).with_entities(Users.f_name, Users.l_name, Users.mobile_no ).filter(Users.u_name == u_name).all()
+		user_dict = {"user" :{"first_name" : get_user_data[0][0] , "last_name" : get_user_data[0][1] , "mobile_no" : get_user_data[0][2]}}
+		return jsonify(user_dict)
+	else:
+		user_dict = {"user" :{"first_name" : None , "last_name" : None, "mobile_no" : None}, "Error" : "Cannot see due to security reason."}
+		return jsonify(user_dict)
 
 @app.route('/user_registration', methods=['GET', 'POST'])
 def user_registration():
@@ -97,10 +108,6 @@ def get_record():
 	get_msg = db.session.query(Messages.msg_timestamp, '|'+Users.u_name, Messages.msg_body).outerjoin(Users, Users.u_id == Messages.msg_from).filter(or_(and_(Messages.msg_from == str(request.form['data_id']), Messages.msg_to == session['u_id']), and_(Messages.msg_from == session['u_id'], Messages.msg_to == str(request.form['data_id'])))).limit(100).all()
 	return str(get_msg).replace("[", "").replace("('", "[").replace("')," , '&#13;').replace("',)", "").replace("]", "").replace("', '", "] : ").replace("')", "").replace("] : |", " @ ")
 
-@app.route('/get_time_now', methods=['GET', 'POST'] )
-def get_time_now():
-	return get_time()
-
 @app.route('/logout')
 def logout():
 	mqtt.unsubscribe_all()
@@ -128,6 +135,7 @@ def handle_subscribe(json_str):
 ''' MQTT Callbacks '''
 @mqtt.on_connect()
 def handle_connect(client, userdata, flags, rc):
+	print(rc)
 	mqtt.subscribe('chat/#')
 	print("Connected!")
 

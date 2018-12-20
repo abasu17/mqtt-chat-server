@@ -52,7 +52,7 @@
 					}
 				});
 			});
-			
+
 			$('#button_send').on("click", function(){
 				var today = new Date();
 				var date = today.getDate()+'-'+(today.getMonth()+1)+'-'+today.getFullYear();
@@ -63,7 +63,7 @@
 				var $textarea = $('#msgBox');
 				$textarea.val($textarea.val()+ '\n' + d_content);
 			});
-			
+
 		});	
 	</script>
 {% endblock%}
