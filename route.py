@@ -97,6 +97,10 @@ def get_record():
 	get_msg = db.session.query(Messages.msg_timestamp, '|'+Users.u_name, Messages.msg_body).outerjoin(Users, Users.u_id == Messages.msg_from).filter(or_(and_(Messages.msg_from == str(request.form['data_id']), Messages.msg_to == session['u_id']), and_(Messages.msg_from == session['u_id'], Messages.msg_to == str(request.form['data_id'])))).limit(100).all()
 	return str(get_msg).replace("[", "").replace("('", "[").replace("')," , '&#13;').replace("',)", "").replace("]", "").replace("', '", "] : ").replace("')", "").replace("] : |", " @ ")
 
+@app.route('/get_time_now', methods=['GET', 'POST'] )
+def get_time_now():
+	return get_time()
+
 @app.route('/logout')
 def logout():
 	mqtt.unsubscribe_all()
@@ -126,7 +130,7 @@ def handle_subscribe(json_str):
 def handle_connect(client, userdata, flags, rc):
 	mqtt.subscribe('chat/#')
 	print("Connected!")
-    
+
 @mqtt.on_message()
 def handle_mqtt_message(client, userdata, message):
 	print("\n\n On Message!!!\n")

@@ -22,8 +22,9 @@
 					success: function(response){
 						var topic = $('#selectUser').find(':selected').data('action');
 						var message = $('#inputMsgBox').val();
+						var ms_val =  ' @ ' + "{{curr_user}}" +'] : ' + message
 						var qos = 0;
-						var data = '{"topic": "' + topic + '", "message": "' + message + '", "qos": ' + qos + '}';
+						var data = '{"topic": "' + topic + '", "message": "' + ms_val + '", "qos": ' + qos + '}';
 						socket.emit('publish', data=data);
 						$("#inputMsgBox").val(''); 
 					}
@@ -32,8 +33,10 @@
 			
 			socket.on('mqtt_message', function(data) {
 				console.log(data);
+				var sign = $('#selectUser').find(':selected').data('action');
 				var c_user = $('#chat_form').data('action');
-				var text = '[' + data['time'] + ' @ ' + c_user +']' + data['payload'];
+				var d_content = '[' + data['time'] +  data['payload'];
+				var text = (data['topic'] == "{{curr_sign}}") ? d_content : '';
 				var $textarea = $('#msgBox');
 				$textarea.val($textarea.val()+ '\n' + text);
 			});
@@ -50,13 +53,25 @@
 				});
 			});
 			
+			$('#button_send').on("click", function(){
+				var today = new Date();
+				var date = today.getDate()+'-'+(today.getMonth()+1)+'-'+today.getFullYear();
+				var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+				var dateTime = time+' '+date;
+				var ms = $('#inputMsgBox').val()
+				var d_content = '[' + dateTime + ' @ ' + "{{curr_user}}" +'] : ' + ms;
+				var $textarea = $('#msgBox');
+				$textarea.val($textarea.val()+ '\n' + d_content);
+			});
+			
 		});	
 	</script>
 {% endblock%}
 
 {% block body %}
 	<nav class="navbar navbar-expand-lg fixed-top navbar-dark bg-dark float-right" style="z-index:0;">
-		<a style="margin-left:93%" href="{{ url_for('logout')}}">
+		<font style="margin-left:90%; color:white;">{{curr_user}}</font>
+		<a style="margin-left:1%" href="{{ url_for('logout')}}">
 			<button class="btn btn-outline-danger" type="submit">
 				Logout
 			</button>
